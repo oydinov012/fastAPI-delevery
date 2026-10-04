@@ -1,14 +1,18 @@
-from click import pass_obj
+from enum import auto
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base , sessionmaker
 
 db_owner = 'ilyos'
 password = 1234
 db_name = 'fastapi'
-engine = create_engine(f"postgresl://{db_owner}:{password}@localhost/{db_name}",echo=True)
+engine = create_engine(f"postgresql://{db_owner}:{password}@localhost/{db_name}",echo=True)
 
 
 
 Base = declarative_base()
 
-Session = sessionmaker()
+Sessionlocal = sessionmaker(
+    bind=engine,
+    autoflush=False,
+    autocommit=False)
