@@ -2,6 +2,12 @@ from fastapi import FastAPI
 
 import auth_routers
 import orders_routers
+from schemas import Settings
+from async_fastapi_jwt_auth import AuthJWT
+
+@AuthJWT.load_config # type: ignore
+def get_config():
+    return Settings()
 
 app = FastAPI()
 app.include_router(orders_routers.order_router)

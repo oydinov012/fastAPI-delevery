@@ -1,5 +1,8 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 class SignUp(BaseModel):
     id : Optional[int] = None
@@ -22,3 +25,17 @@ class SignUp(BaseModel):
             }
         }
     )
+
+
+
+
+class Settings(BaseModel):
+    authjwt_secret_key : str = os.environ["AUTH_JWT_token"]
+
+
+
+class Login(BaseModel):
+    username_or_pasword : str
+    password : str
+
+
