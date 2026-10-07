@@ -1,10 +1,14 @@
+from curses.ascii import HT
+import datetime
+from doctest import REPORT_CDIFF
 from re import S
+import re
 
 from fastapi import APIRouter, Depends , status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from models import User
-from sqlalchemy import or_
+from sqlalchemy import or_, true
 from schemas import Login, SignUp
 from database import Sessionlocal
 from async_fastapi_jwt_auth import AuthJWT
@@ -78,6 +82,10 @@ async def singnup(user : SignUp):
 @auth_router.post('/login',status_code=200)
 async def login(user:Login , autorize:AuthJWT = Depends()):
     sessiya = Sessionlocal()
+    acces_live_time = datetime.timedelta(minutes=50)
+    refresh_live_time = datetime.timedelta(days=3)
+
+
     try:
         db_user = sessiya.query(User).filter(
             or_(
@@ -87,8 +95,8 @@ async def login(user:Login , autorize:AuthJWT = Depends()):
         ).first()
 
         if db_user and check_password_hash(str(db_user.password),user.password): 
-            access_token = await autorize.create_access_token(subject=str(db_user.username)) 
-            refresh_token = await autorize.create_refresh_token(subject=str(db_user.username)) 
+            access_token = await autorize.create_access_token(subject=str(db_user.username),expires_time=acces_live_time) 
+            refresh_token = await autorize.create_refresh_token(subject=str(db_user.username), expires_time=refresh_live_time) 
 
             token = {
                 "access":access_token,
@@ -112,5 +120,62 @@ async def login(user:Login , autorize:AuthJWT = Depends()):
 
     finally :
         sessiya.close()
+
+
+
+
+@auth_router.get('/login/refresh')
+async def refresh_token(authorize : AuthJWT = Depends()):
+    acces_live_time = datetime.timedelta(minutes=50)
+    try:
+        await authorize.jwt_refresh_token_required()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Yarosiz yoki muddati o'tgan token"
+        )
+
+    currrent_user = await authorize.get_jwt_subject()
+
+    sessiya = Sessionlocal()
+
+    try:
+        
+        db_user  = sessiya.query(User).filter(User.username == currrent_user).first() 
+
+        if db_user is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='User not found')
+        new_access_token =await authorize.create_access_token(subject=str(db_user.username), expires_time=acces_live_time)
+
+        response = {
+            "success":True,
+            "code":200,
+            "message":"Acces token yangilandi",
+            "token":new_access_token
+        }
+        return jsonable_encoder(response)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Invalid acces token'
+        )
+    finally :
+        sessiya.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
