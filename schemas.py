@@ -1,5 +1,6 @@
 import json
 from re import I
+from tkinter import NO
 from token import OP
 
 from pydantic import BaseModel, ConfigDict
@@ -46,11 +47,11 @@ class Login(BaseModel):
 
 
 class OrderModel(BaseModel):
-    id : Optional[int]
+    id : Optional[int] = None
     quantity : int
     order_statuses : Optional[str] = "PENDING"
-    user_id : Optional[int]
-    product_id : Optional[int]
+    user_id : Optional[int] = None
+    product_id : Optional[int] = None
 
     model_config = ConfigDict(
         from_attributes=True,

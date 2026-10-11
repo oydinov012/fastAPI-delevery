@@ -26,7 +26,7 @@ class Order(Base):
         ("PENDING","pending"),
         ("IN_TRANZIT","in_tranzit"),
         ("DELEVIRED","delevired")
-    )
+    )           
     __tablename__ = "orders"
     id = Column(Integer,primary_key=True)
     quantity = Column(Integer,nullable=True)
