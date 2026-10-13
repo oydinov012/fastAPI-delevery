@@ -1,10 +1,9 @@
-from ast import ExtSlice
-from curses.ascii import HT, US
-from re import S, U
-import stat
+
+from ast import Or
+from calendar import c
+from re import U
 
 from fastapi import APIRouter , Depends , status
-from fastapi.background import P
 from fastapi.encoders import jsonable_encoder
 from async_fastapi_jwt_auth import AuthJWT
 from models import User, Product , Order
@@ -139,7 +138,7 @@ async def get_all_order(autorize: AuthJWT = Depends()):
         ]
 
         return {
-            "message": "Buyurtmalar ro'yxati",
+            "message": "  Barcha buyurtmalar ro'yxati",
             "data": data
         }
 
@@ -224,4 +223,91 @@ async def get_detail(id:int,autorize:AuthJWT=Depends()):
     finally:
         sessiya.close()
 
+
+
+@order_router.get('/user-orders')
+async def main_order(autorize:AuthJWT=Depends()):
+    try:
+        await autorize.jwt_required()
+        current_user =  await autorize.get_jwt_subject()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Ro'yxatdan o'tish talab qilinadi"
+        )
+
+    sessiya = Sessionlocal()
+
+    try:
+        user = sessiya.query(User).filter(User.username == current_user).first()
+        assert user is not None
+        orders = sessiya.query(Order).filter(Order.user_id == user.id).all()
+
+        data = [
+            {
+                "order_id":order.id,
+                "order_statuses":order.order_statuses,
+                "quantity":order.quantity,
+                "product":(
+                    order.product if order.product else 'mahsulot endi kiritiladi'
+                )
+            } for order in orders
+        ]
+        
+        assert user is not None
+        response = {
+            'user':{
+                "username":user.username,
+                "first_name":user.email,
+                "is_staff":user.is_staff
+                
+            } ,
+            'buyurtmalar':data
+        }
+
+        return jsonable_encoder({
+            "succes":True,
+            "message":f"{user.username}ning barcha buyurtmalari",
+            'order':response
+
+        })
+
+    except Exception as e:
+        raise 
+    
+    finally:
+        sessiya.close()
+
+
+
+@order_router.delete('/user-order-delete/{id:int}')
+async def order_delete(id:int, autorize:AuthJWT=Depends()):
+    try:
+        await autorize.jwt_required()
+        current_user =  await autorize.get_jwt_subject()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Mumkin emas"
+        )
+
+    sessiya = Sessionlocal()
+
+    try:
+        order = sessiya.query(Order).filter(Order.id == id).first()
+        user = sessiya.query(User).filter(User.username == current_user).first()
+
+        assert order is not None
+        assert user is not None
+        if order.user_id == user.id:
+            sessiya.delete(order)
+        else:
+            raise 
+                        
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Server bilan svyaz uzildi "
+        )
 

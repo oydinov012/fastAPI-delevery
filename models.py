@@ -25,7 +25,7 @@ class Order(Base):
     ORDER_STATUS = (
         ("PENDING","pending"),
         ("IN_TRANZIT","in_tranzit"),
-        ("DELEVIRED","delevired")
+        ("DELEVIRED","delevired")   
     )           
     __tablename__ = "orders"
     id = Column(Integer,primary_key=True)
