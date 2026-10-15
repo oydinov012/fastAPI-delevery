@@ -1,12 +1,7 @@
-
-from ast import Or
-from calendar import c
-from re import U
-
 from fastapi import APIRouter , Depends , status
 from fastapi.encoders import jsonable_encoder
 from async_fastapi_jwt_auth import AuthJWT
-from models import User, Product , Order
+from models import User , Order
 from schemas import OrderModel, OrderStattusModel
 from database import Sessionlocal
 from fastapi.exceptions import HTTPException
@@ -118,7 +113,7 @@ async def get_all_order(autorize: AuthJWT = Depends()):
                 detail="Foydalanuvchi topilmadi"
             )
 
-        if not current_user.is_staff:
+        if not current_user.is_staff: # type: ignore
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Ruxsat berilmagan"
@@ -184,7 +179,7 @@ async def get_detail(id:int,autorize:AuthJWT=Depends()):
                 detail="Foydalanuvchi topilmadi"
             )
 
-        if not current_user.is_staff:
+        if not current_user.is_staff: # type: ignore
 
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -299,7 +294,7 @@ async def order_delete(id:int, autorize:AuthJWT=Depends()):
 
         assert order is not None
         assert user is not None
-        if order.user_id == user.id:
+        if order.user_id == user.id: # type: ignore
             sessiya.delete(order)
         else:
             raise 

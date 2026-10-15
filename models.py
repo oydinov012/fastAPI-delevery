@@ -21,7 +21,7 @@ class User(Base):
     def __repr__(self):
         return f"user >> {self.username}"
 
-class Order(Base):
+class Order(Base):  
     ORDER_STATUS = (
         ("PENDING","pending"),
         ("IN_TRANZIT","in_tranzit"),

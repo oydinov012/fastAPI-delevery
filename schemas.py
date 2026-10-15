@@ -78,4 +78,17 @@ class OrderStattusModel(BaseModel):
 
 
 
+class ProductModel(BaseModel):
+    id : Optional[int] = None
+    name:str
+    price : int
 
+    model_config =ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example":{
+                "name":"Mahsulot nomi",
+                "Price":200
+            }
+        }
+    )
