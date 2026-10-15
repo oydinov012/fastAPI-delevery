@@ -1,6 +1,7 @@
 import json
+from pickle import NONE
 from re import I
-from tkinter import NO
+from tkinter import N, NO
 from token import OP
 
 from pydantic import BaseModel, ConfigDict
@@ -89,6 +90,22 @@ class ProductModel(BaseModel):
             "example":{
                 "name":"Mahsulot nomi",
                 "Price":200
+            }
+        }
+    )
+
+
+class ProductUpdateModel(BaseModel):
+    
+    name : Optional[str] = None
+    price : Optional[int] = None
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example":{
+                "name":"ixtiyoriy",
+                "price":000
             }
         }
     )
